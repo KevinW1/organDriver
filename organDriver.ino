@@ -6,7 +6,8 @@ byte chestChannel = 0x01;
 #define clockPin 12  //pin 13 of chip
 #define latchPin 11  //pin 12 of chip
 #define dataPin 10  //pin 3 of chip
-#define numChips 1
+#define numChips 2
+#define noteOffset 24  //C1 value, start of rank in midi
 byte noteStates[numChips];
 
 void setup() {
@@ -28,24 +29,32 @@ void loop() {
 } 
 
 void shiftShit(){
-  for (int j = 0; j < 8; j++) {
-    digitalWrite(latchPin, LOW);
-    shiftOut(dataPin, clockPin, MSBFIRST, noteStates[0]);  
-    digitalWrite(latchPin, HIGH);
+  digitalWrite(latchPin, LOW);
+  for (int i = 0; i < numChips; i++) {
+    shiftOut(dataPin, clockPin, MSBFIRST, noteStates[i]);  
   }
+  digitalWrite(latchPin, HIGH);
 }
 
 void handleNoteOn(byte channel, byte pitch, byte velocity)
 {
-  int pinNum = pitch % 8;
-  bitWrite(noteStates[0], pinNum, 1);
+  updateNoteStatus(pitch, true);
 }
 
 void handleNoteOff(byte channel, byte pitch, byte velocity)
 {
-  int pinNum = pitch % 8;
-  bitWrite(noteStates[0], pinNum, 0);
+  updateNoteStatus(pitch, false);
 }
+
+void updateNoteStatus(byte pitch, boolean state)
+{
+  pitch -= noteOffset;
+  int chipNum = (pitch/8);
+  int pinNum = pitch % 8;
+  bitWrite(noteStates[chipNum], pinNum, state);
+
+}
+
 
 
 
