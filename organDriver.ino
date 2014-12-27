@@ -2,13 +2,15 @@
 
 MIDI_CREATE_DEFAULT_INSTANCE();
 
-byte chestChannel = 0x01;
+byte chestChannel = 0x01;  // channel
 #define clockPin 12  //pin 13 of chip
 #define latchPin 11  //pin 12 of chip
 #define dataPin 10  //pin 3 of chip
-#define numChips 2
+#define numChips 2  // number of shift registers
 #define noteOffset 24  //C1 value, start of rank in midi
 byte noteStates[numChips];
+
+//653-A6R-162RF  dip switch model
 
 void setup() {
   pinMode(latchPin, OUTPUT);
@@ -49,6 +51,7 @@ void handleNoteOff(byte channel, byte pitch, byte velocity)
 void updateNoteStatus(byte pitch, boolean state)
 {
   pitch -= noteOffset;
+  pitch = (pitch < 0) ? 0 : pitch;
   int chipNum = (pitch/8);
   int pinNum = pitch % 8;
   bitWrite(noteStates[chipNum], pinNum, state);
