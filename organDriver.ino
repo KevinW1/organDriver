@@ -2,10 +2,10 @@
 
 MIDI_CREATE_DEFAULT_INSTANCE();
 
-
-#define clockPin 12  //pin 13 of chip
-#define latchPin 11  //pin 12 of chip
-#define dataPin 10  //pin 3 of chip
+//that old 74HC595N shift register
+#define latchPin 12  //pin 12 of chip
+#define clockPin 11  //pin 11 of chip
+#define dataPin 10  //pin 14 of chip
 #define numChips 2  // number of shift registers
 #define noteOffset 24  //midi C1 value, start of rank
 #define dipPin1 9  //|All for dip switch model 653-A6R-162RF
