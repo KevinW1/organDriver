@@ -20,10 +20,11 @@ byte noteStates[numChips];  //note status array
 
 void setup()
 {
+  pinMode(outputEnable, OUTPUT);
+  digitalWrite(outputEnable, HIGH);  //turn off outputs
   pinMode(latchPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
-  pinMode(outputEnable, OUTPUT);  
 
   //set the pinMode for the DIP switch
   pinModeRange(DIP_LSB_PIN, DIP_MSB_PIN, INPUT_PULLUP);
@@ -38,8 +39,6 @@ void setup()
   MIDI.setHandleNoteOn(handleNoteOn);
   MIDI.setHandleNoteOff(handleNoteOff);
   MIDI.begin(chestChannel);
-  
-  MIDI.read();  //does an initial read to fix the "output blink" issue.
   
   digitalWrite(outputEnable, LOW);  //turn on outputs
 }
