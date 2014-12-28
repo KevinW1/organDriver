@@ -1,4 +1,5 @@
 #include <MIDI.h>
+#include <string.h>
 
 MIDI_CREATE_DEFAULT_INSTANCE();
 
@@ -6,23 +7,23 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #define latchPin 12  //pin 12 of chip
 #define clockPin 11  //pin 11 of chip
 #define dataPin 10  //pin 14 of chip
+#define outputEnable 5 //pin 13, inverted
 #define numChips 2  // number of shift registers
 #define noteOffset 24  //midi C1 value, start of rank
-
 
 #define DIP_LSB_PIN 9
 #define DIP_MSB_PIN 6
 
+byte chestChannel = 0x00;  // channel
+byte noteStates[numChips];  //note status array
 
-byte chestChannel = 0;  // channel
-byte noteStates[numChips];  //number of shift registers
 
 void setup()
 {
   pinMode(latchPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
-  
+  pinMode(outputEnable, OUTPUT);  
 
   //set the pinMode for the DIP switch
   pinModeRange(DIP_LSB_PIN, DIP_MSB_PIN, INPUT_PULLUP);
@@ -30,10 +31,17 @@ void setup()
   //get the MIDI channel number from the DIP switch
   chestChannel = readDIP(DIP_LSB_PIN, DIP_MSB_PIN, true);
 
+  memset(noteStates, 0, sizeof(noteStates));  // clear the note array
+
+  shiftShit();  //sets everything to zero
+
   MIDI.setHandleNoteOn(handleNoteOn);
   MIDI.setHandleNoteOff(handleNoteOff);
   MIDI.begin(chestChannel);
-
+  
+  MIDI.read();  //does an initial read to fix the "output blink" issue.
+  
+  digitalWrite(outputEnable, LOW);  //turn on outputs
 }
 
 //sets a range of pins to a given mode
@@ -103,10 +111,3 @@ void updateNoteStatus(byte pitch, boolean state)
   bitWrite(noteStates[chipNum], pinNum, state);
 
 }
-
-
-
-
-
-
-
