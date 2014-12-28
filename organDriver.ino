@@ -1,4 +1,5 @@
 #include <MIDI.h>
+#include <string.h>
 
 MIDI_CREATE_DEFAULT_INSTANCE();
 
@@ -6,6 +7,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #define latchPin 12  //pin 12 of chip
 #define clockPin 11  //pin 11 of chip
 #define dataPin 10  //pin 14 of chip
+#define outputEnable 5 //pin 13, inverted
 #define numChips 2  // number of shift registers
 #define noteOffset 24  //midi C1 value, start of rank
 #define dipPin1 9  //|All for dip switch model 653-A6R-162RF
@@ -13,22 +15,30 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #define dipPin4 7  //|
 #define dipPin8 6  //|
 byte chestChannel = 0x00;  // channel
-byte noteStates[numChips];  //number of shift registers
+byte noteStates[numChips];  //note status array
 
 void setup() {
   pinMode(latchPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
+  pinMode(outputEnable, OUTPUT);
   pinMode(dipPin1, INPUT_PULLUP);
   pinMode(dipPin2, INPUT_PULLUP);
   pinMode(dipPin4, INPUT_PULLUP);
   pinMode(dipPin8, INPUT_PULLUP);
+  
+  memset(noteStates, 0, sizeof(noteStates));  // clear the note array
 
-  setChannel();
+  shiftShit();  //sets everything to zero
+  setChannel();  //sets midi channel to listen to
 
   MIDI.setHandleNoteOn(handleNoteOn);
   MIDI.setHandleNoteOff(handleNoteOff);
   MIDI.begin(chestChannel);
+  
+  MIDI.read();  //does an initial read to fix the "output blink" issue.
+  
+  digitalWrite(outputEnable, LOW);  //turn on outputs
 
 }
 
@@ -44,7 +54,7 @@ void loop() {
 
   MIDI.read();
   shiftShit();
-
+  
 } 
 
 void shiftShit(){
@@ -74,6 +84,8 @@ void updateNoteStatus(byte pitch, boolean state)
   bitWrite(noteStates[chipNum], pinNum, state);
 
 }
+
+
 
 
 
