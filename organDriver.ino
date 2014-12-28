@@ -43,11 +43,12 @@ void pinModeRange(uint8_t a, uint8_t b, int mode)
   uint8_t start = (a < b) ? a : b;
   uint8_t stop  = (a < b) ? b : a;
 
-  for(uint8_t pin = start; pin <= stop; a++)
+  for(uint8_t pin = start; pin <= stop; pin++)
       pinMode(pin, mode);
 }
 
 
+//works for DIP switches with a max of 8 bits
 uint8_t readDIP(uint8_t lsb_pin, uint8_t msb_pin, bool invert)
 {
   uint8_t value = 0;
@@ -69,10 +70,8 @@ uint8_t readDIP(uint8_t lsb_pin, uint8_t msb_pin, bool invert)
 
 void loop()
 {
-
   MIDI.read();
   shiftShit();
-
 } 
 
 void shiftShit()
