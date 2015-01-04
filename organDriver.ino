@@ -10,6 +10,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 #define outputEnable 5 //pin 13, inverted
 #define numChips 2  // number of shift registers
 #define noteOffset 24  //midi C1 value, start of rank
+#define noteLEDPin  4  //LED for blinking note light
 
 #define DIP_LSB_PIN 9
 #define DIP_MSB_PIN 6
@@ -25,6 +26,7 @@ void setup()
   pinMode(latchPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
+  pinMode(noteLEDPin, OUTPUT);
 
   //set the pinMode for the DIP switch
   pinModeRange(DIP_LSB_PIN, DIP_MSB_PIN, INPUT_PULLUP);
@@ -39,7 +41,7 @@ void setup()
   MIDI.setHandleNoteOn(handleNoteOn);
   MIDI.setHandleNoteOff(handleNoteOff);
   MIDI.begin(chestChannel);
-  
+  digitalWrite(noteLEDPin, LOW);  //turn off note light
   digitalWrite(outputEnable, LOW);  //turn on outputs
 }
 
@@ -83,22 +85,31 @@ void loop()
 
 void shiftShit()
 {
+  byte checkState = 0;  //for checking to see if any notes are on
   digitalWrite(latchPin, LOW);
   for(int i = 0; i < numChips; i++)
   {
     shiftOut(dataPin, clockPin, MSBFIRST, noteStates[i]);  
+    checkState += noteStates[i];
   }
   digitalWrite(latchPin, HIGH);
+  if(checkState == 0){
+    digitalWrite(noteLEDPin, LOW);  //all notes off
+  }else{
+    digitalWrite(noteLEDPin, HIGH);  //someting on somewhere
+  }
 }
 
 void handleNoteOn(byte channel, byte pitch, byte velocity)
 {
   updateNoteStatus(pitch, true);
+  
 }
 
 void handleNoteOff(byte channel, byte pitch, byte velocity)
 {
   updateNoteStatus(pitch, false);
+  
 }
 
 void updateNoteStatus(byte pitch, boolean state)
