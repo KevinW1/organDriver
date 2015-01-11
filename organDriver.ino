@@ -17,7 +17,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 
 byte chestChannel = 0x00;  // channel
 byte noteStates[numChips];  //note status array
-uint8_t activeNotes = 0;  //for checking to see if any notes are on
+uint8_t activeNote = 0;  //for checking to see if any notes are on
 
 void setup()
 {
@@ -85,14 +85,20 @@ void loop()
 
 void shiftShit()
 {
-
+  activeNote = 0;
   digitalWrite(latchPin, LOW);
   for(int i = 0; i < numChips; i++)
   {
     shiftOut(dataPin, clockPin, MSBFIRST, noteStates[i]);  
+    activeNote += noteStates[i];
   }
   digitalWrite(latchPin, HIGH);
-
+  if(activeNote == 0){
+    digitalWrite(noteLEDPin, LOW);
+  }
+  else{
+    digitalWrite(noteLEDPin, HIGH);
+  }
 }
 
 void handleNoteOn(byte channel, byte pitch, byte velocity)
@@ -112,16 +118,9 @@ void updateNoteStatus(byte pitch, boolean state)
   int chipNum = (pitch/8);
   int pinNum = pitch % 8;
   bitWrite(noteStates[chipNum], pinNum, state);
-
-  if (state)
-    activeNotes ++;
-  else
-    activeNotes --;
-
-  if(activeNotes == 0)
-    digitalWrite(noteLEDPin, LOW);  //all notes off
-  else
-    digitalWrite(noteLEDPin, HIGH);  //someting on somewhere
 }
+
+
+
 
 
